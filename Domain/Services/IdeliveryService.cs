@@ -10,5 +10,8 @@ namespace Domain.Services
     {
         Task<bool> IsAvailable(string data);
         Task SendToDelivery(string data);
+
+        Task SetStatusToInTransit();
+        Task CancelDelivery();
     }
 }
