@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace Application.CreateOrderSaga
 {
-    internal class CreateOrderSagaState : SagaStateMachineInstance
+    public class CreateOrderSagaState : SagaStateMachineInstance
     {
         public Guid CorrelationId { get; set; }
+        public string CurrentState { get; set; }
+
     }
 }

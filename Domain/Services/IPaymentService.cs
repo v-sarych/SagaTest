@@ -8,6 +8,7 @@ namespace Domain.Services
 {
     public interface IPaymentService
     {
+        Task CreatePayment();
         Task StartPayment();
         Task AcceptPayment();
 
