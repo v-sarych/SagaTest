@@ -8,6 +8,7 @@ namespace Domain.Services
 {
     public interface IOrderService
     {
+        Task SetToInDelivery();
         Task CreateOrder(string data);
         Task CancelOrder();
     }

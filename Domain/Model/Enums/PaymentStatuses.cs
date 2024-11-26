@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Model
+namespace Domain.Model.Enums
 {
-    public class CreatePaymentRequest
-    {
-        public Guid OrderId {  get; set; }
+    public enum PaymentStatuses{
+        Success = 0,
+        Progress = 1,
+        Failed = 2,
     }
 }

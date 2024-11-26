@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Domain.Model
 {
-    public class CreatePaymentRequest
+    public class InDeliveryRequest
     {
-        public Guid OrderId {  get; set; }
+        public Guid OrderId { get; set; }
     }
 }
