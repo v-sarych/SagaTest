@@ -11,5 +11,6 @@ namespace Domain.Model.Enums
         Created = 0,
         Aborted = 1,
         Delivered = 2,
+        InTransit = 3,
     }
 }

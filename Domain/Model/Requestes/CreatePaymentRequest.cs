@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Model
+namespace Domain.Model.Requestes
 {
     public class CreatePaymentRequest
     {
-        public Guid OrderId {  get; set; }
+        public Guid OrderId { get; set; }
     }
 }

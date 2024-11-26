@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Model
+namespace Domain.Model.Responses
 {
-    public class CreateOrderSagaRequest
+    public class CancelOrderResponse
     {
-        public Guid OrderId {  get; set; }
+        public Guid OrderId { get; set; }
     }
 }

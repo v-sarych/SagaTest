@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Model;
 using Domain.Model.Enums;
+using Domain.Model.Requestes;
+using Domain.Model.Responses;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -19,12 +21,15 @@ namespace Application.CreateOrderSaga
         public State SendedToDelivery {  get; set; }
         public State InDelivery { get; set; }
 
+
         public Event<CreateOrderSagaRequest> CreateOrder {  get; set; }
+        public Event<OrderTimeOut> OrderTimeOut { get; set; }
+        public Request<CreateOrderSagaState, CancelOrderRequest, CancelOrderResponse> CancelOrder { get; set; }
         public Request<CreateOrderSagaState, CreatePaymentRequest, CreatePaymentResponse> CreatePaymentRequest { get; set; }
         public Request<CreateOrderSagaState, SendToDeliveryRequest, SendToDeliveryResponse> SendToDelivery { get; set; }
-        public Event<InDeliveryRequest> InDeliveryEvent { get; set; }
-        public Event<DeliveryStatusUpdated> DeliveryAborted { get; set; }
+        public Event<DeliveryStatusUpdated> DeliveryStatusUpdated { get; set; }
         public Event<PaymentStatusUpdated> PaymentStatusUpdated { get; set; }
+
 
         public CreateOrderSaga(ILogger<CreateOrderSaga> logger)
         {
@@ -32,8 +37,12 @@ namespace Application.CreateOrderSaga
 
             Event<CreateOrderSagaRequest>(() => CreateOrder, x => x.CorrelateById(y => y.Message.OrderId));
             Event<PaymentStatusUpdated>(() => PaymentStatusUpdated, x => x.CorrelateById(y => y.Message.OrderId));
-
+            Event<DeliveryStatusUpdated>(() => DeliveryStatusUpdated, x => x.CorrelateById(y => y.Message.OrderId));
+            Event<OrderTimeOut>(() => OrderTimeOut, x => x.CorrelateById(y => y.Message.OrderId));
+            
             Request(() => CreatePaymentRequest);
+            Request(() => CancelOrder);
+            Request(() => SendToDelivery);
 
             InstanceState(x => x.CurrentState);
             
@@ -60,7 +69,11 @@ namespace Application.CreateOrderSaga
 
                                 break;
                         }
-                    }));
+                    }),
+                When(OrderTimeOut)
+                    .Request(CancelOrder, x => x.Init<CancelOrderRequest>(new { OrderId = x.Message.OrderId }))
+                    .Finalize()
+                );
 
             During(PaymentInProgress, 
                 When(PaymentStatusUpdated)
@@ -87,18 +100,49 @@ namespace Application.CreateOrderSaga
                 }));
 
             During(SendedToDelivery,
-                When(InDeliveryEvent),
-                When(DeliveryAborted)
+                When(DeliveryStatusUpdated)
                     .ThenAsync(async context =>
                     {
                         _logger.LogInformation("Saga received delivery aborted");
+                        switch (context.Message.DeliveryStatus)
+                        {
+                            case DeliveryStatuses.InTransit:
+                                _logger.LogInformation("DeliveryStatuses.InTransit");
+
+                                await context.TransitionToState(InDelivery);
+                                break;
+
+                            case DeliveryStatuses.Aborted:
+
+                                _logger.LogInformation("Saga received DeliveryStatuses.Aborted");
+
+                                //aborted logic
+
+                                break;
+                        }
                     }));
 
             During(InDelivery,
-                When(DeliveryAborted)
+                When(DeliveryStatusUpdated)
                     .ThenAsync(async context =>
                     {
                         _logger.LogInformation("Saga received delivery aborted");
+                        switch (context.Message.DeliveryStatus)
+                        {
+                            case DeliveryStatuses.Delivered:
+                                _logger.LogInformation("DeliveryStatuses.InTransit");
+
+                                //canceling job logic
+                                break;
+
+                            case DeliveryStatuses.Aborted:
+
+                                _logger.LogInformation("Saga received DeliveryStatuses.Aborted");
+
+                                //aborted logic
+
+                                break;
+                        }
                     }));
         }
 

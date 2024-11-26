@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Model
+namespace Domain.Model.Responses
 {
-    public class SendToDeliveryRequest
+    public class CreatePaymentResponse
     {
         public Guid OrderId { get; set; }
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Model
 {
-    public class InDeliveryRequest
+    public class OrderTimeOut
     {
         public Guid OrderId { get; set; }
     }
