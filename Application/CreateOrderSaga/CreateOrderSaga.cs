@@ -63,7 +63,7 @@ namespace Application.CreateOrderSaga
                         switch (context.Message.PaymentStatus)
                         {
                             case PaymentStatuses.Progress:
-                                context.TransitionToState(PaymentInProgress);
+                                await context.TransitionToState(PaymentInProgress);
 
                                 _logger.LogInformation("Saga received payment in progress");
 
@@ -71,6 +71,10 @@ namespace Application.CreateOrderSaga
                         }
                     }),
                 When(OrderTimeOut)
+                    .ThenAsync(async context =>
+                    {
+                        _logger.LogInformation("Saga received OrderTimeOut");
+                    })
                     .Request(CancelOrder, x => x.Init<CancelOrderRequest>(new { OrderId = x.Message.OrderId }))
                     .Finalize()
                 );
@@ -85,7 +89,7 @@ namespace Application.CreateOrderSaga
                             _logger.LogInformation("Saga received payment in progress");
 
                             await context.RespondAsync(SendToDelivery);
-                            context.TransitionToState(SendedToDelivery);
+                            await context.TransitionToState(SendedToDelivery);
 
                             _logger.LogInformation("Saga send to delivery");
                             break;
@@ -93,7 +97,7 @@ namespace Application.CreateOrderSaga
                         case PaymentStatuses.Failed:
 
                             _logger.LogInformation("Saga received payment failed");
-                            context.TransitionToState(PaymentInProgress);
+                            await context.TransitionToState(PaymentInProgress);
 
                             break;
                     }
@@ -132,13 +136,13 @@ namespace Application.CreateOrderSaga
                             case DeliveryStatuses.Delivered:
                                 _logger.LogInformation("DeliveryStatuses.InTransit");
 
-                                //canceling job logic
+                                //finalize job
                                 break;
 
                             case DeliveryStatuses.Aborted:
 
                                 _logger.LogInformation("Saga received DeliveryStatuses.Aborted");
-
+                                
                                 //aborted logic
 
                                 break;
