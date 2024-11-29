@@ -12,7 +12,7 @@ namespace WorkerService.Controllers
         [HttpPost("CreateOrder")]
         public async Task CreateOrder(string data)
         {
-            await _bus.Send(new CreateOrderSagaRequest()
+            await _bus.Publish(new CreateOrderSagaRequest()
             {
                 OrderId = Guid.NewGuid()
             });

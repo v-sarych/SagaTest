@@ -1,4 +1,5 @@
-﻿using Application.CreateOrderSaga;
+﻿using Application.Consumers;
+using Application.CreateOrderSaga;
 using Domain.Model.Requestes;
 using MassTransit;
 
@@ -12,7 +13,10 @@ namespace WorkerService.Extentions
             {
                 x.SetKebabCaseEndpointNameFormatter();
 
+                x.AddDelayedMessageScheduler();
                 x.AddSagaStateMachine<CreateOrderSaga, CreateOrderSagaState>().InMemoryRepository();
+
+                x.AddConsumer<CreatePaymentConsumer>();
 
                 x.UsingRabbitMq((bus, rabbit) =>
                 {
@@ -22,7 +26,9 @@ namespace WorkerService.Extentions
                         h.Password("guest");
                     });
                     
-                    //rabbit.Send<CreateOrderSagaRequest>();
+                    rabbit.UseDelayedMessageScheduler();
+
+                    rabbit.Publish<CreateOrderSagaRequest>();
                     rabbit.ConfigureEndpoints(bus);
                 });
             });
