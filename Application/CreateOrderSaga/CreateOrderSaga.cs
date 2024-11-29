@@ -48,6 +48,10 @@ namespace Application.CreateOrderSaga
             
             Initially(
                 When(CreateOrder)
+                    .ThenAsync(async context =>
+                    {
+                        _logger.LogInformation($"Saga created: { context.Message.OrderId }");
+                    })
                     .Request(CreatePaymentRequest, x => x.Init<CreatePaymentRequest>(new{OrderId = x.Message.OrderId}))
                     .ThenAsync(async context =>
                     {
