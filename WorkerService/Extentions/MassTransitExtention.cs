@@ -1,4 +1,5 @@
-﻿using Domain.Model.Requestes;
+﻿using Application.CreateOrderSaga;
+using Domain.Model.Requestes;
 using MassTransit;
 
 namespace WorkerService.Extentions
@@ -10,6 +11,9 @@ namespace WorkerService.Extentions
             services.AddMassTransit(x =>
             {
                 x.SetKebabCaseEndpointNameFormatter();
+
+                x.AddSagaStateMachine<CreateOrderSaga, CreateOrderSagaState>().InMemoryRepository();
+
                 x.UsingRabbitMq((bus, rabbit) =>
                 {
                     rabbit.Host("192.168.0.14", h =>
@@ -17,8 +21,8 @@ namespace WorkerService.Extentions
                         h.Username("guest");
                         h.Password("guest");
                     });
-
-                    rabbit.Send<CreateOrderSagaRequest>();
+                    
+                    //rabbit.Send<CreateOrderSagaRequest>();
                     rabbit.ConfigureEndpoints(bus);
                 });
             });

@@ -6,13 +6,13 @@ namespace WorkerService.Controllers
 {
     [ApiController]
     [Route("/[controller]")]
-    public class OrderController(ISendEndpoint _sendEndpoint) : Controller
+    public class OrderController(IBus _bus) : Controller
     {
 
         [HttpPost("CreateOrder")]
         public async Task CreateOrder(string data)
         {
-            await _sendEndpoint.Send(new CreateOrderSagaRequest()
+            await _bus.Send(new CreateOrderSagaRequest()
             {
                 OrderId = Guid.NewGuid()
             });

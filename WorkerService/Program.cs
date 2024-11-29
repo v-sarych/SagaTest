@@ -1,3 +1,4 @@
+using MassTransit;
 using WorkerService.Extentions;
 
 var builder = WebApplication.CreateBuilder(args);
