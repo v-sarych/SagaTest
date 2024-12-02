@@ -15,7 +15,7 @@ namespace Application.Consumers
         public async Task Consume(ConsumeContext<CreatePaymentRequest> context)
         {
             _logger.LogInformation("Payment Created");
-            await context.RespondAsync<CreatePaymentResponse>(new()
+            await context.RespondAsync<CreatePaymentResponse>(new
             {
                 OrderId = context.Message.OrderId,
             });
