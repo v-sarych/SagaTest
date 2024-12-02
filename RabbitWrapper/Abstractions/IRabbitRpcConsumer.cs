@@ -8,6 +8,6 @@ namespace RabbitWrapper.Abstractions
 {
     public interface IRabbitRpcConsumer
     {
-        Task Consume<TResponse, TRequest>(string procedureName, Func<TRequest, Task<TResponse>> handler);
+        Task Consume<TRequest, TResponse>(string procedureName, Func<TRequest, Task<TResponse>> handler);
     }
 }

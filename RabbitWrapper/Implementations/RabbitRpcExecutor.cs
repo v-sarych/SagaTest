@@ -28,12 +28,15 @@ namespace RabbitWrapper.Implementations
             var responseQueueName = await chanel.QueueDeclareAsync(exclusive: true);
             await chanel.QueueBindAsync(responseQueueName, configuration.ResponseExchangeName, corelationId.ToString());
 
-            await chanel.BasicPublishAsync(await _getPublishExchangeName(procedureName, chanel), "", false, new BasicProperties()
+            //sending
+            await chanel.ExchangeDeclareAsync(configuration.RequestExchangeName, "direct", false, false);
+            await chanel.BasicPublishAsync(configuration.RequestExchangeName, "", false, new BasicProperties()
             {
                 CorrelationId = corelationId.ToString(),
                 ReplyTo = configuration.ResponseExchangeName,
             }, bytesData);
 
+            //receiving
             RpcResponse<TResponse> response = new();
             SemaphoreSlim semaphore = new SemaphoreSlim(0, 1);
             var consumer = new AsyncEventingBasicConsumer(chanel);
@@ -51,14 +54,6 @@ namespace RabbitWrapper.Implementations
                 throw new Exception(response.Eror);
             }
             return response.Data;
-        }
-
-        private async Task<string> _getPublishExchangeName(string procedureName, IChannel chanel)
-        {
-            await chanel.ExchangeDeclareAsync(configuration.RequestExchangeName, "direct", false, false);
-            await chanel.QueueDeclareAsync(procedureName, exclusive: true);
-
-            return "rpc";
         }
     }
 }

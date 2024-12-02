@@ -8,6 +8,6 @@ namespace RabbitWrapper.Abstractions
 {
     public interface IRabbitRpcExecutor
     {
-        Task<TResponse> ExecuteAsync<TResponse, TRequest>(string procedureName, TRequest data);
+        Task<TResponse> ExecuteAsync<TRequest, TResponse>(string procedureName, TRequest data);
     }
 }
