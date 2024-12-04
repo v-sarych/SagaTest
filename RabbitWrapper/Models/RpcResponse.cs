@@ -8,10 +8,9 @@ namespace RabbitWrapper.Models
 {
     public class RpcResponse<TData>
     {
-        public Guid CorrelationId { get; set; }
         public bool IsSuccess { get; set; }
 
-        public string? Eror {  get; set; }
+        public Exception? Eror {  get; set; }
         public TData? Data { get; set; }
     }
 }

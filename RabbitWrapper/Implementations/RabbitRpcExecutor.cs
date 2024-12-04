@@ -20,13 +20,24 @@ namespace RabbitWrapper.Implementations
             {
                 Data = request
             };
-            var bytesData = JsonSerializer.SerializeToUtf8Bytes<RpcRequest<TRequest>>(data);
+            var bytesData = JsonSerializer.SerializeToUtf8Bytes(data);
 
             Guid corelationId = Guid.NewGuid();
 
             //create response query
-            var responseQueueName = await chanel.QueueDeclareAsync(exclusive: true);
-            await chanel.QueueBindAsync(responseQueueName, configuration.ResponseExchangeName, corelationId.ToString());
+            var responseQueue = await chanel.QueueDeclareAsync(exclusive: true, autoDelete: true);
+            await chanel.QueueBindAsync(responseQueue.QueueName, configuration.ResponseExchangeName, corelationId.ToString());
+
+            //receiving
+            RpcResponse<TResponse> response = new();
+            SemaphoreSlim semaphore = new SemaphoreSlim(0, 1);
+            var consumer = new AsyncEventingBasicConsumer(chanel);
+            consumer.ReceivedAsync += async (model, ea) =>
+            {
+                response = JsonSerializer.Deserialize<RpcResponse<TResponse>>(ea.Body.ToArray());
+                semaphore.Release();
+            };
+            await chanel.BasicConsumeAsync(responseQueue.QueueName, autoAck: true, consumer);
 
             //sending
             await chanel.ExchangeDeclareAsync(configuration.RequestExchangeName, "direct", false, false);
@@ -36,22 +47,13 @@ namespace RabbitWrapper.Implementations
                 ReplyTo = configuration.ResponseExchangeName,
             }, bytesData);
 
-            //receiving
-            RpcResponse<TResponse> response = new();
-            SemaphoreSlim semaphore = new SemaphoreSlim(0, 1);
-            var consumer = new AsyncEventingBasicConsumer(chanel);
-            consumer.ReceivedAsync += async (model, ea) =>
-            {
-                response = JsonSerializer.Deserialize<RpcResponse<TResponse>>(bytesData);
-                semaphore.Release();
-            };
-            await chanel.BasicConsumeAsync(responseQueueName, autoAck: true, consumer);
-
+            //message received
             await semaphore.WaitAsync();
+            await chanel.QueueDeleteAsync(responseQueue.QueueName);
 
             if (!response.IsSuccess)
             {
-                throw new Exception(response.Eror);
+                throw response.Eror;
             }
             return response.Data;
         }

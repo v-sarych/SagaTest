@@ -10,7 +10,7 @@ namespace WorkerService.Controllers
     {
 
         [HttpPost("CreateOrder")]
-        public async Task CreateOrder(string data)
+        public async Task CreateOrder()
         {
             await _bus.Publish(new CreateOrderSagaRequest()
             {
